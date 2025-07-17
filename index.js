@@ -5,6 +5,7 @@ import cors from 'cors';
 import authRoute from './routes/authRoute.js';
 import http from 'http'; 
 import messageRoute from './routes/messageRoute.js';
+import userRoute from './routes/userRoute.js';
 import { Server } from 'socket.io'; // Import Server from socket.io
 import socketHandler from './socket/socketHandler.js';
 
@@ -44,6 +45,7 @@ app.use(cors());
 //Routes
 app.use('/api/auth', authRoute);
 app.use('/api/message', messageRoute);
+app.use('/api/users', userRoute);
 
 
 // Socket.io handler

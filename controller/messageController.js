@@ -32,3 +32,42 @@ export const getRoomMessages = async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch messages', details: error.message });
     }
 }
+
+
+
+// In controller
+export const getLatestMessages = async (req, res) => {
+  const currentUserId = req.params.userId;
+
+  try {
+    const messages = await Message.aggregate([
+      {
+        $match: {
+          $or: [
+            { sender: currentUserId },
+            { receiver: currentUserId },
+          ]
+        }
+      },
+      {
+        $sort: { createdAt: -1 }
+      },
+      {
+        $group: {
+          _id: {
+            $cond: [
+              { $eq: ["$sender", currentUserId] },
+              "$receiver",
+              "$sender"
+            ]
+          },
+          lastMessage: { $first: "$$ROOT" }
+        }
+      }
+    ]);
+
+    res.status(200).json(messages);
+  } catch (error) {
+    res.status(500).json({ error: "Could not fetch latest messages" });
+  }
+};
