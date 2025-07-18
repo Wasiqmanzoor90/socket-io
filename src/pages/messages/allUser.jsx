@@ -1,7 +1,8 @@
-import axios from 'axios';
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
 
+// Styles object containing all component styling
 const styles = {
   wrapper: {
     width: "100vw",
@@ -10,6 +11,7 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     fontFamily: "Inter, Arial, sans-serif",
+    overflow: "hidden",
   },
   header: {
     background: "rgba(255,255,255,0.95)",
@@ -65,6 +67,7 @@ const styles = {
     margin: 0,
     flex: 1,
     background: "#fff",
+    overflowY: "auto",
   },
   userItem: {
     display: "flex",
@@ -72,11 +75,14 @@ const styles = {
     padding: "18px 36px",
     borderBottom: "1px solid #f0f0f0",
     cursor: "pointer",
-    transition: "background 0.15s",
     position: "relative",
+    transition: "background 0.17s, box-shadow 0.17s, transform 0.17s",
+    background: "#fff",
   },
   userItemHover: {
-    background: "#f8f9fa",
+    background: "#ececff",
+    boxShadow: "0 4px 16px 0 rgba(78,84,200,0.08)",
+    transform: "scale(1.02)",
   },
   avatar: {
     width: "54px",
@@ -86,46 +92,41 @@ const styles = {
     objectFit: "cover",
     border: "3px solid #fff",
     boxShadow: "0 2px 8px rgba(102,126,234,0.11)",
+    background: "#ececff",
   },
   userInfo: {
     flex: 1,
     minWidth: 0,
+    display: "flex",
+    flexDirection: "column",
   },
   userName: {
     fontSize: "1.21rem",
     fontWeight: 700,
     color: "#232354",
-    margin: 0,
-    marginBottom: "4px",
+    marginBottom: "2px",
     whiteSpace: "nowrap",
     overflow: "hidden",
     textOverflow: "ellipsis",
+    letterSpacing: "0.04em",
   },
   userStatus: {
     fontSize: "0.97rem",
     color: "#666",
     display: "flex",
     alignItems: "center",
+    gap: "7px",
   },
-  onlineIndicator: {
-    width: "10px",
-    height: "10px",
-    borderRadius: "50%",
-    background: "#4caf50",
-    marginRight: "8px",
-  },
-  offlineIndicator: {
-    width: "10px",
-    height: "10px",
-    borderRadius: "50%",
-    background: "#bbb",
-    marginRight: "8px",
-  },
-  messageIcon: {
-    color: "#667eea",
-    fontSize: "1.6rem",
-    opacity: 0.7,
-    marginLeft: "18px",
+  messageTime: {
+    fontSize: "0.93rem",
+    color: "#764ba2",
+    marginLeft: "6px",
+    fontWeight: 600,
+    background: "#ececff",
+    borderRadius: "9px",
+    padding: "2px 10px",
+    alignSelf: "flex-start",
+    marginTop: "4px",
   },
   error: {
     color: "#f44336",
@@ -160,21 +161,37 @@ const styles = {
   emptySubtext: {
     fontSize: "0.95rem",
     color: "#999",
-  }
+  },
 };
+
+function formatDate(dateStr) {
+  // Accepts ISO string, returns "YYYY-MM-DD HH:mm"
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  const h = String(date.getHours()).padStart(2, "0");
+  const min = String(date.getMinutes()).padStart(2, "0");
+  return `${y}-${m}-${d} ${h}:${min}`;
+}
 
 export default function AllUser() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+  const userId = localStorage.getItem("id");
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
+
   const [loading, setLoading] = useState(true);
+  const [recentUserIds, setRecentUserIds] = useState([]);
+  const [recentUserTimes, setRecentUserTimes] = useState({});
   const [err, setErr] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [hoveredUser, setHoveredUser] = useState(null);
 
   useEffect(() => {
-    if (!token) {
+    if (!token || !userId) {
       navigate("/");
       return;
     }
@@ -183,11 +200,33 @@ export default function AllUser() {
       setErr("");
       try {
         const res = await axios.get("http://localhost:5000/api/users", {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
         const userData = res.data.users || res.data;
         setUsers(userData);
         setFilteredUsers(userData);
+        // Get recent message info
+        const latest = await axios.get(
+          `http://localhost:5000/api/message/latest/${userId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        // Extract user IDs and message times from recent messages
+        const latestIds = [];
+        const latestTimes = {};
+        latest.data.forEach((msg) => {
+          const otherUserId =
+            msg.lastMessage.sender === userId
+              ? msg.lastMessage.receiver
+              : msg.lastMessage.sender;
+          latestIds.push(otherUserId);
+          if (msg.lastMessage.date) {
+            latestTimes[otherUserId] = formatDate(msg.lastMessage.date);
+          }
+        });
+        setRecentUserIds(latestIds);
+        setRecentUserTimes(latestTimes);
       } catch (error) {
         setErr("Unable to load users. Please check your connection.");
         setTimeout(() => navigate("/"), 2000);
@@ -195,10 +234,10 @@ export default function AllUser() {
       setLoading(false);
     };
     fetchUsers();
-  }, [token, navigate]);
+  }, [token, navigate, userId]);
 
   useEffect(() => {
-    const filtered = users.filter(user =>
+    const filtered = users.filter((user) =>
       user.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredUsers(filtered);
@@ -208,14 +247,22 @@ export default function AllUser() {
     navigate(`/chat/${user._id}`, { state: { user } });
   };
 
-  // Mock online status (replace with real logic if available)
-  const isOnline = (userId) => Math.random() > 0.5;
+  // Sort users: recent first
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    const aIsRecent = recentUserIds.includes(a._id);
+    const bIsRecent = recentUserIds.includes(b._id);
+    if (aIsRecent && !bIsRecent) return -1;
+    if (!aIsRecent && bIsRecent) return 1;
+    return 0;
+  });
 
   return (
     <div style={styles.wrapper}>
       <header style={styles.header}>
         <h1 style={styles.headerTitle}>Your Chats</h1>
-        <div style={styles.subtitle}>{users.length} contacts &middot; Let's get chatting!</div>
+        <div style={styles.subtitle}>
+          {users.length} contacts &middot; Let's get chatting!
+        </div>
       </header>
       <div style={styles.content}>
         <div style={styles.searchBar}>
@@ -226,8 +273,8 @@ export default function AllUser() {
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{
               ...styles.searchInput,
-              borderColor: searchTerm ? '#667eea' : '#e9ecef',
-              background: searchTerm ? '#fff' : '#f8f9fa',
+              borderColor: searchTerm ? "#667eea" : "#e9ecef",
+              background: searchTerm ? "#fff" : "#f8f9fa",
             }}
           />
         </div>
@@ -236,53 +283,77 @@ export default function AllUser() {
           <div style={styles.loading}>Loading conversations...</div>
         ) : (
           <ul style={styles.userList}>
-            {filteredUsers.length === 0 && (
+            {sortedUsers.length === 0 ? (
               <div style={styles.emptyState}>
                 <div style={styles.emptyIcon}>👥</div>
                 <div style={styles.emptyText}>
-                  {searchTerm ? 'No matches found' : 'No users available'}
+                  {searchTerm ? "No matches found" : "No users available"}
                 </div>
                 <div style={styles.emptySubtext}>
-                  {searchTerm ? 'Try a different search term' : 'Check back later for new contacts'}
+                  {searchTerm
+                    ? "Try a different search term"
+                    : "Check back later for new contacts"}
                 </div>
               </div>
+            ) : (
+              sortedUsers.map((user) => {
+                const hasRecentMessages = recentUserIds.includes(user._id);
+                const messageTime = recentUserTimes[user._id];
+                return (
+                  <li
+                    key={user._id}
+                    style={{
+                      ...styles.userItem,
+                      ...(hoveredUser === user._id ? styles.userItemHover : {}),
+                      boxShadow: hasRecentMessages
+                        ? "0 4px 18px 0 rgba(79,84,200,0.13)"
+                        : styles.userItem.boxShadow,
+                    }}
+                    onClick={() => goToChat(user)}
+                    onMouseEnter={() => setHoveredUser(user._id)}
+                    onMouseLeave={() => setHoveredUser(null)}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`Start chat with ${user.name}`}
+                  >
+                    <img
+                      src={
+                        user.avatar ||
+                        `https://api.dicebear.com/7.x/initials/svg?seed=${user.name}&backgroundColor=667eea,764ba2`
+                      }
+                      alt={`${user.name}'s avatar`}
+                      style={styles.avatar}
+                      loading="lazy"
+                    />
+                    <div style={styles.userInfo}>
+                      <div
+                        style={{
+                          ...styles.userName,
+                          fontWeight: hasRecentMessages ? 900 : 700,
+                        }}
+                      >
+                        {user.name}
+                      </div>
+
+                      <div style={styles.userStatus}>
+                        {user.email || "Available for chat"}
+                        {recentUserTimes[user._id] && (
+                          <span style={styles.messageTime}>
+                            {recentUserTimes[user._id]}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </li>
+                );
+              })
             )}
-            {filteredUsers.map((user) => (
-              <li
-                key={user._id}
-                style={{
-                  ...styles.userItem,
-                  ...(hoveredUser === user._id ? styles.userItemHover : {})
-                }}
-                onClick={() => goToChat(user)}
-                onMouseEnter={() => setHoveredUser(user._id)}
-                onMouseLeave={() => setHoveredUser(null)}
-                tabIndex={0}
-                role="button"
-                aria-label={`Start chat with ${user.name}`}
-              >
-                <img
-                  src={user.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${user.name}&backgroundColor=667eea,764ba2,f093fb,4facfe,43e97b`}
-                  alt={`${user.name}'s avatar`}
-                  style={styles.avatar}
-                  loading="lazy"
-                />
-                <div style={styles.userInfo}>
-                  <div style={styles.userName}>{user.name}</div>
-                  <div style={styles.userStatus}>
-                    <span style={isOnline(user._id) ? styles.onlineIndicator : styles.offlineIndicator}></span>
-                    {isOnline(user._id) ? 'Online' : 'Last seen recently'}
-                  </div>
-                </div>
-                <div style={styles.messageIcon}>💬</div>
-              </li>
-            ))}
           </ul>
         )}
       </div>
-      {/* Hide scrollbars visually but keep scrolling functionality */}
+      {/* Hide scrollbars globally */}
       <style>{`
-        ::-webkit-scrollbar { width: 0 !important; }
+        ::-webkit-scrollbar { width: 0 !important; background: transparent !important;}
         html { scrollbar-width: none !important; }
         body { -ms-overflow-style: none !important; }
       `}</style>
