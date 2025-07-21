@@ -191,7 +191,8 @@ export default function Chat() {
     const fetchMessages = async () => {
       setErr('');
       try {
-        const res = await axios.get(`http://localhost:5000/api/message/${room}`, {
+        const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
+        const res = await axios.get(`${API_BASE}/api/message/${room}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setMessages(res.data);

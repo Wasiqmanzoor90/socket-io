@@ -116,7 +116,8 @@ function Login() {
     e.preventDefault();
     setErrorMsg("");
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/", form);
+      const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
+      const res = await axios.post(`${API_BASE}/api/auth/`, form);
       const token = res.data.token;
      const user = res.data.user;
      console.log("User:", user);

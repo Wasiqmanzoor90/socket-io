@@ -1,6 +1,6 @@
-import axios from 'axios';
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router';
+import axios from "axios";
+import React, { useState } from "react";
+import { useNavigate } from "react-router";
 
 // Styles for enhanced look and feel
 const styles = {
@@ -107,18 +107,22 @@ function Register() {
     setErrorMsg("");
     setSuccessMsg("");
     try {
-      const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/register`, form);
+      const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
+      const res = await axios.post(`${API_BASE}/api/auth/register`, form);
+
       if (res.data.success) {
         setSuccessMsg("Registration successful! You can now log in.");
         setTimeout(() => navigate("/"), 1500); // Redirect after short delay
       } else {
-        setErrorMsg(res.data.message || "Registration failed. Please try again.");
+        setErrorMsg(
+          res.data.message || "Registration failed. Please try again."
+        );
       }
     } catch (error) {
       setErrorMsg(
         error.response?.data?.msg ||
-        error.response?.data?.message ||
-        "Registration failed. Please try again."
+          error.response?.data?.message ||
+          "Registration failed. Please try again."
       );
     }
   };
@@ -130,7 +134,9 @@ function Register() {
       {successMsg && <div style={styles.success}>{successMsg}</div>}
       <form onSubmit={handleSubmit} style={{ width: "100%" }}>
         <div style={styles.inputContainer}>
-          <label htmlFor="name" style={styles.label}>Name</label>
+          <label htmlFor="name" style={styles.label}>
+            Name
+          </label>
           <input
             id="name"
             style={styles.input}
@@ -143,7 +149,9 @@ function Register() {
           />
         </div>
         <div style={styles.inputContainer}>
-          <label htmlFor="email" style={styles.label}>Email Address</label>
+          <label htmlFor="email" style={styles.label}>
+            Email Address
+          </label>
           <input
             id="email"
             style={styles.input}
@@ -157,7 +165,9 @@ function Register() {
           />
         </div>
         <div style={styles.inputContainer}>
-          <label htmlFor="password" style={styles.label}>Password</label>
+          <label htmlFor="password" style={styles.label}>
+            Password
+          </label>
           <input
             id="password"
             style={styles.input}
@@ -175,7 +185,8 @@ function Register() {
         </button>
       </form>
       <a href="/" style={styles.link}>
-        Already have an account? <span style={{ color: "#4e54c8" }}>Sign In</span>
+        Already have an account?{" "}
+        <span style={{ color: "#4e54c8" }}>Sign In</span>
       </a>
     </div>
   );
