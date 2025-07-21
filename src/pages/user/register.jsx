@@ -107,7 +107,7 @@ function Register() {
     setErrorMsg("");
     setSuccessMsg("");
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/register", form);
+      const res = await axios.post('https://socket-io-amk8.onrender.com/api/register', form);
       if (res.data.success) {
         setSuccessMsg("Registration successful! You can now log in.");
         setTimeout(() => navigate("/"), 1500); // Redirect after short delay
