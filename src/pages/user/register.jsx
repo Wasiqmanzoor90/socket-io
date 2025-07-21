@@ -107,8 +107,11 @@ function Register() {
     setErrorMsg("");
     setSuccessMsg("");
     try {
-     
-      const res = await axios.post(`https://socket-io-amk8.onrender.com/api/auth/register`, form);
+      const res = await axios.post(
+        `https://socket-io-87f1.onrender.com
+/api/auth/register`,
+        form
+      );
 
       if (res.data.success) {
         setSuccessMsg("Registration successful! You can now log in.");

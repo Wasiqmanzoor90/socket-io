@@ -192,7 +192,7 @@ export default function Chat() {
       setErr('');
       try {
       
-        const res = await axios.get(`https://socket-io-amk8.onrender.com/api/message/${room}`, {
+        const res = await axios.get(`https://socket-io-87f1.onrender.com/api/message/${room}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setMessages(res.data);

@@ -200,7 +200,7 @@ export default function AllUser() {
       setErr("");
       try {
         
-        const res = await axios.get(`https://socket-io-amk8.onrender.com/api/users`, {
+        const res = await axios.get(`https://socket-io-87f1.onrender.com/api/users`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const userData = res.data.users || res.data;
@@ -208,7 +208,7 @@ export default function AllUser() {
         setFilteredUsers(userData);
         // Get recent message info
         const latest = await axios.get(
-          `http://localhost:5000/api/message/latest/${userId}`,
+          `https://socket-io-87f1.onrender.com/api/message/latest/${userId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
