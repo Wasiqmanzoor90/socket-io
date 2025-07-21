@@ -216,7 +216,7 @@ export default function Chat() {
     setErr('');
     try {
       const res = await axios.post(
-        'http://localhost:5000/api/message',
+        'https://socket-io-87f1.onrender.com/api/message',
         {
           senderId,
           room,
