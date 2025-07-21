@@ -108,8 +108,7 @@ function Register() {
     setSuccessMsg("");
     try {
       const res = await axios.post(
-        `https://socket-io-87f1.onrender.com
-/api/auth/register`,
+        `${process.env.REACT_APP_API_URL}/api/auth/register`,
         form
       );
 
