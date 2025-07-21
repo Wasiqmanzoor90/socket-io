@@ -199,8 +199,8 @@ export default function AllUser() {
       setLoading(true);
       setErr("");
       try {
-        const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
-        const res = await axios.get(`${API_BASE}/api/users`, {
+        
+        const res = await axios.get(`https://socket-io-amk8.onrender.com/api/users`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const userData = res.data.users || res.data;

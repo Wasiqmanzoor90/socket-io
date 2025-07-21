@@ -116,8 +116,8 @@ function Login() {
     e.preventDefault();
     setErrorMsg("");
     try {
-      const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
-      const res = await axios.post(`${API_BASE}/api/auth/`, form);
+      // const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
+      const res = await axios.post(`https://socket-io-amk8.onrender.com/api/auth/`, form);
       const token = res.data.token;
      const user = res.data.user;
      console.log("User:", user);
@@ -126,7 +126,7 @@ function Login() {
       if (token) {
         localStorage.setItem("token", token);
         localStorage.setItem("id", user.id);
-        navigate("/users");
+        navigate("https://socket-io-amk8.onrender.com/users");
       } else {
         setErrorMsg("Login failed. No token received.");
       }
