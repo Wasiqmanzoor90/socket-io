@@ -267,7 +267,9 @@ export default function AllUser() {
   const [searchFocused, setSearchFocused] = useState(false);
 
   useEffect(() => {
+      console.log("Token on Vercel:", token); // <-- Add this
     if (!token || !userId) {
+
       navigate("/"); // Redirect to login if no token or userId
       return;
     }
@@ -277,7 +279,8 @@ export default function AllUser() {
       setErr("");
       try {
         // Fetch all users
-        const res = await axios.get(`https://socket-io-87f1.onrender.com/api/users`, {
+        const res = await axios.get(`https://socket-io-87f1.onrender.com//api/users`, {
+          
           headers: { Authorization: `Bearer ${token}` },
         });
         const userData = res.data.users || res.data;
