@@ -191,36 +191,33 @@ function Login() {
     setIsSubmitting(true);
 
     try {
-      // Replace with your actual axios call if you prefer axios over fetch
       const response = await fetch("https://socket-io-87f1.onrender.com/api/auth/", {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json"
         },
         body: JSON.stringify(form)
       });
-      
+
       const data = await response.json();
-      
+
       if (data.token) {
-        // In a real app, you'd store the token (e.g., in localStorage)
-        console.log("Login successful:", data);
-        // Navigate to a dashboard or users page upon successful login
-        navigate("/users"); // Example: navigate to /users page
+        // ✅ Store token
+        localStorage.setItem("authToken", data.token);
+
+        // ✅ Delay navigation so localStorage is written (important for Vercel)
+        setTimeout(() => {
+          navigate("/users");
+        }, 300);
       } else {
-        // Display error message from the backend response
         setErrorMsg(data.message || "Login failed. No token received.");
       }
     } catch (error) {
-      // Display error message from the caught error object
-      setErrorMsg(
-        error.message || "Login failed. Please check your credentials and try again."
-      );
+      setErrorMsg(error.message || "Login failed. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
-
   // Function to handle navigation to the register page
   const handleRegisterClick = () => {
     navigate("/register"); // Navigate to the /register route
