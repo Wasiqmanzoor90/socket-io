@@ -254,7 +254,7 @@ function formatDate(dateStr) {
 
 export default function AllUser() {
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("authToken");
   const userId = localStorage.getItem("id");
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
@@ -269,7 +269,7 @@ export default function AllUser() {
   useEffect(() => {
     if (!token || !userId) {
       
-      navigate("/"); // Redirect to login if no token or userId
+      navigate("/login"); // Redirect to login if no token or userId
       return;
     }
     
