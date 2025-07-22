@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
+import { useNavigate } from "react-router-dom";
 
 function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -10,11 +10,46 @@ function Login() {
   const [focusedInput, setFocusedInput] = useState('');
   const [hoveredButton, setHoveredButton] = useState(false);
 
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
 
   useEffect(() => {
     setIsLoaded(true);
-  }, []);
+    // Check if user is already logged in
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      // If token exists, redirect to users page
+      navigate("/users");
+    }
+  }, [navigate]);
+
+  // Helper function to safely store token
+  const storeToken = (token) => {
+    try {
+      localStorage.setItem('authToken', token);
+      // Verify storage was successful
+      const storedToken = localStorage.getItem('authToken');
+      if (storedToken === token) {
+        console.log('Token successfully stored:', storedToken);
+        return true;
+      } else {
+        console.error('Token storage verification failed');
+        return false;
+      }
+    } catch (error) {
+      console.error('Error storing token:', error);
+      return false;
+    }
+  };
+
+  // Helper function to store user data
+  const storeUserData = (userData) => {
+    try {
+      localStorage.setItem('userData', JSON.stringify(userData));
+      console.log('User data stored:', userData);
+    } catch (error) {
+      console.error('Error storing user data:', error);
+    }
+  };
 
   const styles = {
     container: {
@@ -176,12 +211,16 @@ function Login() {
       color: '#dc2626',
       background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
       border: '1px solid #fecaca'
+    },
+    success: {
+      color: '#059669',
+      background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+      border: '1px solid #bbf7d0'
     }
   };
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-    // Clear error message when user starts typing
     if (errorMsg) setErrorMsg("");
   };
 
@@ -190,8 +229,16 @@ function Login() {
     setErrorMsg("");
     setIsSubmitting(true);
 
+    // Basic form validation
+    if (!form.email || !form.password) {
+      setErrorMsg("Please fill in all fields.");
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
-      // Replace with your actual axios call if you prefer axios over fetch
+      console.log('Attempting login with:', { email: form.email });
+      
       const response = await fetch("https://socket-io-87f1.onrender.com/api/auth/", {
         method: 'POST',
         headers: {
@@ -200,30 +247,55 @@ function Login() {
         body: JSON.stringify(form)
       });
       
+      console.log('Response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
+      console.log('Login response data:', data);
       
       if (data.token) {
-        // In a real app, you'd store the token (e.g., in localStorage)
-        console.log("Login successful:", data);
-        // Navigate to a dashboard or users page upon successful login
-        navigate("/users"); // Example: navigate to /users page
+        // Store the token
+        const tokenStored = storeToken(data.token);
+        
+        if (!tokenStored) {
+          setErrorMsg("Login successful but failed to store token. Please try again.");
+          setIsSubmitting(false);
+          return;
+        }
+
+        // Store additional user data if provided
+        if (data.user) {
+          storeUserData(data.user);
+        }
+
+        console.log("Login successful! Token stored.");
+        
+        // Small delay to ensure storage is complete before navigation
+        setTimeout(() => {
+          navigate("/users", { replace: true });
+        }, 100);
+        
       } else {
-        // Display error message from the backend response
-        setErrorMsg(data.message || "Login failed. No token received.");
+        console.error('No token in response:', data);
+        setErrorMsg(data.message || "Login failed. No authentication token received.");
       }
     } catch (error) {
-      // Display error message from the caught error object
+      console.error('Login error:', error);
       setErrorMsg(
-        error.message || "Login failed. Please check your credentials and try again."
+        error.message === 'Failed to fetch' 
+          ? "Unable to connect to server. Please check your internet connection."
+          : error.message || "Login failed. Please check your credentials and try again."
       );
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Function to handle navigation to the register page
   const handleRegisterClick = () => {
-    navigate("/register"); // Navigate to the /register route
+    navigate("/register");
   };
 
   return (
@@ -272,7 +344,7 @@ function Login() {
             </div>
           )}
 
-          <div style={styles.formDiv}>
+          <form style={styles.formDiv} onSubmit={handleSubmit}>
             <div style={styles.inputGroup}>
               <label htmlFor="email" style={styles.label}>Email Address</label>
               <input
@@ -327,7 +399,6 @@ function Login() {
             <button
               type="submit"
               disabled={isSubmitting}
-              onClick={handleSubmit}
               style={{
                 ...styles.submitBtn,
                 ...(hoveredButton && !isSubmitting ? styles.submitBtnHover : {})
@@ -337,7 +408,7 @@ function Login() {
             >
               {isSubmitting ? 'Signing In...' : 'Sign In'}
             </button>
-          </div>
+          </form>
 
           <div style={styles.registerLink}>
             Don't have an account?{' '}
