@@ -1,21 +1,189 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom"; // Ensure react-router-dom is used for useNavigate
 
-// ... (keep all your existing styles object as is) ...
+// Enhanced styles with modern glassmorphic design
 const styles = {
   wrapper: {
     width: "100vw",
-    minHeight: "100vh",
-    background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
+    minHeight: "100vh", // Use minHeight to allow content to expand
+    background:
+      "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
     display: "flex",
     flexDirection: "column",
     fontFamily: "Inter, system-ui, -apple-system, sans-serif",
-    overflow: "hidden",
+    overflow: "hidden", // Keep overflow hidden for the main wrapper
     position: "relative",
     boxSizing: "border-box",
   },
-  // ... (include all other styles from your original code) ...
+  backgroundPattern: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    opacity: 0.03,
+    background: `
+      radial-gradient(circle at 25% 25%, #6366f1 0%, transparent 50%),
+      radial-gradient(circle at 75% 75%, #8b5cf6 0%, transparent 50%),
+      radial-gradient(circle at 50% 50%, #667eea 0%, transparent 50%)
+    `,
+    animation: "pulse 8s ease-in-out infinite alternate",
+  },
+  header: {
+    background: "rgba(255, 255, 255, 0.08)", // Glassmorphic background
+    backdropFilter: "blur(20px)",
+    padding: "40px 0 24px 0",
+    borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+    textAlign: "center",
+    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+    position: "relative", // Ensure header is above background pattern
+    zIndex: 2,
+  },
+  headerTitle: {
+    fontSize: "2.8rem",
+    fontWeight: 800,
+    background: "linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+    backgroundClip: "text",
+    margin: 0,
+    letterSpacing: "-0.02em",
+    textShadow: "0 0 30px rgba(255, 255, 255, 0.3)",
+  },
+  subtitle: {
+    fontSize: "1.1rem",
+    color: "rgba(255, 255, 255, 0.7)",
+    margin: "12px 0 0 0",
+    fontWeight: 500,
+    letterSpacing: "0.3px",
+  },
+  content: {
+    flex: 1,
+    background: "transparent",
+    display: "flex",
+    flexDirection: "column",
+    position: "relative",
+    zIndex: 1, // Ensure content is above background pattern
+  },
+  searchBar: {
+    padding: "24px 32px",
+    background: "rgba(255, 255, 255, 0.05)",
+    backdropFilter: "blur(10px)",
+    borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+    display: "flex",
+    justifyContent: "center",
+    position: "relative", // Ensure searchBar is above background pattern
+    zIndex: 2,
+  },
+  searchInput: {
+    width: "100%",
+    maxWidth: "500px",
+    padding: "16px 24px",
+    border: "2px solid rgba(255, 255, 255, 0.1)",
+    borderRadius: "16px",
+    fontSize: "1.1rem",
+    outline: "none",
+    background: "rgba(255, 255, 255, 0.1)",
+    backdropFilter: "blur(10px)",
+    transition: "all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+    boxSizing: "border-box",
+    color: "#ffffff",
+    fontFamily: "inherit",
+    fontWeight: 500,
+  },
+  searchInputFocused: {
+    borderColor: "rgba(99, 102, 241, 0.6)",
+    boxShadow:
+      "0 0 0 3px rgba(99, 102, 241, 0.1), 0 8px 25px rgba(0, 0, 0, 0.15)",
+    background: "rgba(255, 255, 255, 0.15)",
+  },
+  userList: {
+    listStyle: "none",
+    padding: "20px", // Adjusted padding for better spacing
+    margin: 0,
+    flex: 1,
+    background: "transparent",
+    overflowY: "auto", // Keep scroll functionality
+    gap: "16px", // Increased gap between items
+    display: "flex",
+    flexDirection: "column",
+    position: "relative",
+    zIndex: 1,
+  },
+  userItem: {
+    display: "flex",
+    alignItems: "center",
+    padding: "20px 24px",
+    borderRadius: "18px",
+    cursor: "pointer",
+    position: "relative",
+    transition: "all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+    background: "rgba(255, 255, 255, 0.08)", // Glassmorphic background
+    backdropFilter: "blur(20px)",
+    border: "1px solid rgba(255, 255, 255, 0.1)",
+    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
+  },
+  userItemHover: {
+    background: "rgba(255, 255, 255, 0.15)",
+    boxShadow:
+      "0 8px 30px rgba(99, 102, 241, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.2)",
+    transform: "translateY(-2px) scale(1.01)",
+    borderColor: "rgba(99, 102, 241, 0.3)",
+  },
+  userItemRecent: {
+    background: "rgba(99, 102, 241, 0.1)", // Accent background for recent
+    borderColor: "rgba(99, 102, 241, 0.3)",
+    boxShadow: "0 4px 25px rgba(99, 102, 241, 0.15)",
+  },
+  avatar: {
+    width: "58px",
+    height: "58px",
+    borderRadius: "50%",
+    marginRight: "20px",
+    objectFit: "cover",
+    border: "3px solid rgba(255, 255, 255, 0.2)",
+    boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)",
+    background: "rgba(99, 102, 241, 0.2)", // Placeholder background
+  },
+  userInfo: {
+    flex: 1,
+    minWidth: 0,
+    display: "flex",
+    flexDirection: "column",
+  },
+  userName: {
+    fontSize: "1.3rem",
+    fontWeight: 700,
+    color: "#ffffff",
+    marginBottom: "4px",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    letterSpacing: "0.02em",
+    textShadow: "0 2px 8px rgba(0, 0, 0, 0.3)",
+  },
+  userStatus: {
+    fontSize: "1rem",
+    color: "rgba(255, 255, 255, 0.7)",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    fontWeight: 500,
+  },
+  messageTime: {
+    fontSize: "0.9rem",
+    color: "#6366f1",
+    marginLeft: "8px",
+    fontWeight: 600,
+    background: "rgba(99, 102, 241, 0.2)",
+    backdropFilter: "blur(10px)",
+    borderRadius: "12px",
+    padding: "4px 12px",
+    alignSelf: "flex-start",
+    marginTop: "2px",
+    border: "1px solid rgba(99, 102, 241, 0.3)",
+  },
   error: {
     color: "#ff6b6b",
     textAlign: "center",
@@ -27,7 +195,7 @@ const styles = {
     fontSize: "1rem",
     fontWeight: 600,
     border: "1px solid rgba(255, 107, 107, 0.2)",
-    position: "relative",
+    position: "relative", // Ensure error is above background pattern
     zIndex: 2,
   },
   loading: {
@@ -41,12 +209,42 @@ const styles = {
     padding: "24px",
     borderRadius: "16px",
     border: "1px solid rgba(255, 255, 255, 0.1)",
-    position: "relative",
+    position: "relative", // Ensure loading is above background pattern
     zIndex: 2,
+  },
+  emptyState: {
+    textAlign: "center",
+    padding: "60px 20px",
+    color: "rgba(255, 255, 255, 0.7)",
+    background: "rgba(255, 255, 255, 0.05)",
+    backdropFilter: "blur(10px)",
+    borderRadius: "20px",
+    border: "1px solid rgba(255, 255, 255, 0.1)",
+    margin: "20px",
+    position: "relative", // Ensure emptyState is above background pattern
+    zIndex: 2,
+  },
+  emptyIcon: {
+    fontSize: "3rem",
+    marginBottom: "20px",
+    opacity: 0.6,
+    filter: "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))",
+  },
+  emptyText: {
+    fontSize: "1.2rem",
+    fontWeight: 700,
+    marginBottom: "12px",
+    color: "#ffffff",
+  },
+  emptySubtext: {
+    fontSize: "1rem",
+    color: "rgba(255, 255, 255, 0.6)",
+    fontWeight: 500,
   },
 };
 
 function formatDate(dateStr) {
+  // Accepts ISO string, returns "YYYY-MM-DD HH:mm"
   if (!dateStr) return "";
   const date = new Date(dateStr);
   const y = date.getFullYear();
@@ -59,6 +257,8 @@ function formatDate(dateStr) {
 
 export default function AllUser() {
   const navigate = useNavigate();
+  const token = localStorage.getItem("token");
+  const userId = localStorage.getItem("id");
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -68,112 +268,70 @@ export default function AllUser() {
   const [searchTerm, setSearchTerm] = useState("");
   const [hoveredUser, setHoveredUser] = useState(null);
   const [searchFocused, setSearchFocused] = useState(false);
-  
-  // Add state for token and userId to handle client-side hydration
-  const [token, setToken] = useState(null);
-  const [userId, setUserId] = useState(null);
-  const [isClient, setIsClient] = useState(false);
-
-  // Handle client-side hydration
-  useEffect(() => {
-    setIsClient(true);
-    const storedToken = localStorage.getItem("authToken");
-    const storedUserId = localStorage.getItem("id");
-    
-    console.log("Token from localStorage:", storedToken);
-    console.log("UserId from localStorage:", storedUserId);
-    
-    setToken(storedToken);
-    setUserId(storedUserId);
-  }, []);
 
   useEffect(() => {
-    // Only run if we're on client side and have token/userId
-    if (!isClient || !token || !userId) {
-      if (isClient && (!token || !userId)) {
-        console.log("No token or userId found, redirecting to login");
-        navigate("/");
-      }
+    console.log("Token on Vercel:", token); // <-- Add this
+    if (!token || !userId) {
+      navigate("/"); // Redirect to login if no token or userId
       return;
     }
 
     const fetchUsers = async () => {
       setLoading(true);
       setErr("");
-      
       try {
-        console.log("Making request with token:", token);
-        
-        // Test the token first with a simple request
-        const testRes = await axios.get(
+        // Fetch all users
+        // const res = await axios.get(`https://socket-io-87f1.onrender.com/api/users`, {
+
+        //   headers: { Authorization: `Bearer ${token}` },
+        // });
+
+        const res = await axios.get(
           "https://socket-io-87f1.onrender.com/api/users",
           {
             headers: {
               Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
             },
-            timeout: 10000, // 10 second timeout
           }
         );
-
-        console.log("API Response:", testRes.data);
-        const userData = testRes.data.users || testRes.data;
+        const userData = res.data.users || res.data;
         setUsers(userData);
         setFilteredUsers(userData);
 
         // Fetch recent message info
-        try {
-          const latest = await axios.get(
-            `https://socket-io-87f1.onrender.com/api/message/latest/${userId}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-              },
-              timeout: 10000,
-            }
-          );
-          
-          const latestIds = [];
-          const latestTimes = {};
-          latest.data.forEach((msg) => {
-            const otherUserId =
-              msg.lastMessage.sender === userId
-                ? msg.lastMessage.receiver
-                : msg.lastMessage.sender;
-            latestIds.push(otherUserId);
-            if (msg.lastMessage.date) {
-              latestTimes[otherUserId] = formatDate(msg.lastMessage.date);
-            }
-          });
-          setRecentUserIds(latestIds);
-          setRecentUserTimes(latestTimes);
-        } catch (latestError) {
-          console.log("Failed to fetch recent messages:", latestError);
-          // Don't fail the whole component for recent messages
-        }
-        
+        const latest = await axios.get(
+          `https://socket-io-87f1.onrender.com/api/message/latest/${userId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        // Extract user IDs and message times from recent messages
+        const latestIds = [];
+        const latestTimes = {};
+        latest.data.forEach((msg) => {
+          const otherUserId =
+            msg.lastMessage.sender === userId
+              ? msg.lastMessage.receiver
+              : msg.lastMessage.sender;
+          latestIds.push(otherUserId);
+          if (msg.lastMessage.date) {
+            latestTimes[otherUserId] = formatDate(msg.lastMessage.date);
+          }
+        });
+        setRecentUserIds(latestIds);
+        setRecentUserTimes(latestTimes);
       } catch (error) {
-        console.error("Fetch users error:", error);
-        console.error("Error response:", error.response);
-        
-        if (error.response?.status === 401) {
-          setErr("Your session has expired. Please log in again.");
-          // Clear invalid token
-          localStorage.removeItem("token");
-          localStorage.removeItem("id");
-          setTimeout(() => navigate("/"), 2000);
-        } else if (error.code === 'ECONNABORTED') {
-          setErr("Request timeout. Please check your internet connection.");
-        } else {
-          setErr("Unable to load users. Please check your connection or try again later.");
-        }
+        setErr(
+          "Unable to load users. Please check your connection or try again later."
+        );
+        // Optional: Redirect to login on severe error or token expiry
+        // setTimeout(() => navigate("/"), 2000);
       }
       setLoading(false);
     };
 
     fetchUsers();
-  }, [token, userId, isClient, navigate]);
+  }, [token, navigate, userId]);
 
   useEffect(() => {
     const filtered = users.filter((user) =>
@@ -186,15 +344,6 @@ export default function AllUser() {
     navigate(`/chat/${user._id}`, { state: { user } });
   };
 
-  // Show loading while waiting for client-side hydration
-  if (!isClient) {
-    return (
-      <div style={styles.wrapper}>
-        <div style={styles.loading}>Loading...</div>
-      </div>
-    );
-  }
-
   // Sort users: recent first
   const sortedUsers = [...filteredUsers].sort((a, b) => {
     const aIsRecent = recentUserIds.includes(a._id);
@@ -206,7 +355,6 @@ export default function AllUser() {
 
   return (
     <>
-      {/* Include your existing styles here */}
       <style>{`
         * {
           margin: 0;
@@ -315,7 +463,9 @@ export default function AllUser() {
                       key={user._id}
                       style={{
                         ...styles.userItem,
-                        ...(hoveredUser === user._id ? styles.userItemHover : {}),
+                        ...(hoveredUser === user._id
+                          ? styles.userItemHover
+                          : {}),
                         ...(hasRecentMessages ? styles.userItemRecent : {}),
                       }}
                       onClick={() => goToChat(user)}
@@ -333,7 +483,9 @@ export default function AllUser() {
                         alt={user.name}
                         style={styles.avatar}
                         onError={(e) => {
+                          // Fallback to DiceBear if user.avatar fails to load
                           e.target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${user.name}&backgroundColor=6366f1,8`;
+                          // Set onerror to null to prevent infinite loops if fallback also fails
                           e.target.onerror = null;
                         }}
                       />
@@ -359,3 +511,4 @@ export default function AllUser() {
     </>
   );
 }
+//all ok
