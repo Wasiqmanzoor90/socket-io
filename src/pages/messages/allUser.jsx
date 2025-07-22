@@ -279,7 +279,7 @@ export default function AllUser() {
       setErr("");
       try {
         // Fetch all users
-        const res = await axios.get(`https://socket-io-87f1.onrender.com//api/users`, {
+        const res = await axios.get(`https://socket-io-87f1.onrender.com/api/users`, {
           
           headers: { Authorization: `Bearer ${token}` },
         });
