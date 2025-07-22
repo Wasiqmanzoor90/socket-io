@@ -1,147 +1,98 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom"; // Ensure react-router-dom is used for useNavigate
+import { useNavigate } from "react-router";
 
-// Enhanced styles with modern glassmorphic design
+// Styles object containing all component styling
 const styles = {
   wrapper: {
     width: "100vw",
-    minHeight: "100vh", // Use minHeight to allow content to expand
-    background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
+    height: "100vh",
+    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
     display: "flex",
     flexDirection: "column",
-    fontFamily: "Inter, system-ui, -apple-system, sans-serif",
-    overflow: "hidden", // Keep overflow hidden for the main wrapper
-    position: "relative",
-    boxSizing: "border-box",
-  },
-  backgroundPattern: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    opacity: 0.03,
-    background: `
-      radial-gradient(circle at 25% 25%, #6366f1 0%, transparent 50%),
-      radial-gradient(circle at 75% 75%, #8b5cf6 0%, transparent 50%),
-      radial-gradient(circle at 50% 50%, #667eea 0%, transparent 50%)
-    `,
-    animation: "pulse 8s ease-in-out infinite alternate",
+    fontFamily: "Inter, Arial, sans-serif",
+    overflow: "hidden",
   },
   header: {
-    background: "rgba(255, 255, 255, 0.08)", // Glassmorphic background
-    backdropFilter: "blur(20px)",
-    padding: "40px 0 24px 0",
-    borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+    background: "rgba(255,255,255,0.95)",
+    backdropFilter: "blur(8px)",
+    padding: "34px 0 17px 0",
+    borderBottom: "1px solid #e9ecef",
     textAlign: "center",
-    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-    position: "relative", // Ensure header is above background pattern
-    zIndex: 2,
+    boxShadow: "0 2px 12px 0 rgba(78,84,200,0.04)",
   },
   headerTitle: {
-    fontSize: "2.8rem",
-    fontWeight: 800,
-    background: "linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%)",
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: "transparent",
-    backgroundClip: "text",
+    fontSize: "2.6rem",
+    fontWeight: 900,
+    color: "#4e54c8",
     margin: 0,
-    letterSpacing: "-0.02em",
-    textShadow: "0 0 30px rgba(255, 255, 255, 0.3)",
+    letterSpacing: "0.5px",
+    textShadow: "0 2px 8px rgba(102,126,234,0.08)",
   },
   subtitle: {
-    fontSize: "1.1rem",
-    color: "rgba(255, 255, 255, 0.7)",
-    margin: "12px 0 0 0",
-    fontWeight: 500,
-    letterSpacing: "0.3px",
+    fontSize: "1.02rem",
+    color: "#888",
+    margin: "7px 0 0 0",
+    fontStyle: "italic",
+    letterSpacing: "0.1px",
   },
   content: {
     flex: 1,
-    background: "transparent",
+    background: "#f8f9fa",
     display: "flex",
     flexDirection: "column",
-    position: "relative",
-    zIndex: 1, // Ensure content is above background pattern
   },
   searchBar: {
-    padding: "24px 32px",
-    background: "rgba(255, 255, 255, 0.05)",
-    backdropFilter: "blur(10px)",
-    borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+    padding: "18px 0",
+    background: "#fff",
+    borderBottom: "1px solid #e9ecef",
     display: "flex",
     justifyContent: "center",
-    position: "relative", // Ensure searchBar is above background pattern
-    zIndex: 2,
   },
   searchInput: {
     width: "100%",
     maxWidth: "500px",
-    padding: "16px 24px",
-    border: "2px solid rgba(255, 255, 255, 0.1)",
-    borderRadius: "16px",
+    padding: "14px 22px",
+    border: "1px solid #e9ecef",
+    borderRadius: "26px",
     fontSize: "1.1rem",
     outline: "none",
-    background: "rgba(255, 255, 255, 0.1)",
-    backdropFilter: "blur(10px)",
-    transition: "all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+    background: "#f8f9fa",
+    transition: "all 0.2s",
     boxSizing: "border-box",
-    color: "#ffffff",
-    fontFamily: "inherit",
-    fontWeight: 500,
-  },
-  searchInputFocused: {
-    borderColor: "rgba(99, 102, 241, 0.6)",
-    boxShadow: "0 0 0 3px rgba(99, 102, 241, 0.1), 0 8px 25px rgba(0, 0, 0, 0.15)",
-    background: "rgba(255, 255, 255, 0.15)",
   },
   userList: {
     listStyle: "none",
-    padding: "20px", // Adjusted padding for better spacing
+    padding: 0,
     margin: 0,
     flex: 1,
-    background: "transparent",
-    overflowY: "auto", // Keep scroll functionality
-    gap: "16px", // Increased gap between items
-    display: "flex",
-    flexDirection: "column",
-    position: "relative",
-    zIndex: 1,
+    background: "#fff",
+    overflowY: "auto",
   },
   userItem: {
     display: "flex",
     alignItems: "center",
-    padding: "20px 24px",
-    borderRadius: "18px",
+    padding: "18px 36px",
+    borderBottom: "1px solid #f0f0f0",
     cursor: "pointer",
     position: "relative",
-    transition: "all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-    background: "rgba(255, 255, 255, 0.08)", // Glassmorphic background
-    backdropFilter: "blur(20px)",
-    border: "1px solid rgba(255, 255, 255, 0.1)",
-    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
+    transition: "background 0.17s, box-shadow 0.17s, transform 0.17s",
+    background: "#fff",
   },
   userItemHover: {
-    background: "rgba(255, 255, 255, 0.15)",
-    boxShadow: "0 8px 30px rgba(99, 102, 241, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.2)",
-    transform: "translateY(-2px) scale(1.01)",
-    borderColor: "rgba(99, 102, 241, 0.3)",
-  },
-  userItemRecent: {
-    background: "rgba(99, 102, 241, 0.1)", // Accent background for recent
-    borderColor: "rgba(99, 102, 241, 0.3)",
-    boxShadow: "0 4px 25px rgba(99, 102, 241, 0.15)",
+    background: "#ececff",
+    boxShadow: "0 4px 16px 0 rgba(78,84,200,0.08)",
+    transform: "scale(1.02)",
   },
   avatar: {
-    width: "58px",
-    height: "58px",
+    width: "54px",
+    height: "54px",
     borderRadius: "50%",
-    marginRight: "20px",
+    marginRight: "18px",
     objectFit: "cover",
-    border: "3px solid rgba(255, 255, 255, 0.2)",
-    boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)",
-    background: "rgba(99, 102, 241, 0.2)", // Placeholder background
+    border: "3px solid #fff",
+    boxShadow: "0 2px 8px rgba(102,126,234,0.11)",
+    background: "#ececff",
   },
   userInfo: {
     flex: 1,
@@ -150,93 +101,66 @@ const styles = {
     flexDirection: "column",
   },
   userName: {
-    fontSize: "1.3rem",
+    fontSize: "1.21rem",
     fontWeight: 700,
-    color: "#ffffff",
-    marginBottom: "4px",
+    color: "#232354",
+    marginBottom: "2px",
     whiteSpace: "nowrap",
     overflow: "hidden",
     textOverflow: "ellipsis",
-    letterSpacing: "0.02em",
-    textShadow: "0 2px 8px rgba(0, 0, 0, 0.3)",
+    letterSpacing: "0.04em",
   },
   userStatus: {
-    fontSize: "1rem",
-    color: "rgba(255, 255, 255, 0.7)",
+    fontSize: "0.97rem",
+    color: "#666",
     display: "flex",
     alignItems: "center",
-    gap: "8px",
-    fontWeight: 500,
+    gap: "7px",
   },
   messageTime: {
-    fontSize: "0.9rem",
-    color: "#6366f1",
-    marginLeft: "8px",
+    fontSize: "0.93rem",
+    color: "#764ba2",
+    marginLeft: "6px",
     fontWeight: 600,
-    background: "rgba(99, 102, 241, 0.2)",
-    backdropFilter: "blur(10px)",
-    borderRadius: "12px",
-    padding: "4px 12px",
+    background: "#ececff",
+    borderRadius: "9px",
+    padding: "2px 10px",
     alignSelf: "flex-start",
-    marginTop: "2px",
-    border: "1px solid rgba(99, 102, 241, 0.3)",
+    marginTop: "4px",
   },
   error: {
-    color: "#ff6b6b",
+    color: "#f44336",
     textAlign: "center",
     margin: "20px",
-    background: "rgba(255, 107, 107, 0.1)",
-    backdropFilter: "blur(10px)",
-    padding: "16px 20px",
-    borderRadius: "16px",
-    fontSize: "1rem",
-    fontWeight: 600,
-    border: "1px solid rgba(255, 107, 107, 0.2)",
-    position: "relative", // Ensure error is above background pattern
-    zIndex: 2,
+    background: "#fff",
+    padding: "16px",
+    borderRadius: "12px",
+    fontSize: "0.95rem",
   },
   loading: {
-    color: "rgba(255, 255, 255, 0.8)",
+    color: "#666",
     textAlign: "center",
-    margin: "60px 20px",
-    fontSize: "1.2rem",
-    fontWeight: 600,
-    background: "rgba(255, 255, 255, 0.05)",
-    backdropFilter: "blur(10px)",
-    padding: "24px",
-    borderRadius: "16px",
-    border: "1px solid rgba(255, 255, 255, 0.1)",
-    position: "relative", // Ensure loading is above background pattern
-    zIndex: 2,
+    margin: "40px 20px",
+    fontSize: "1.15rem",
   },
   emptyState: {
     textAlign: "center",
-    padding: "60px 20px",
-    color: "rgba(255, 255, 255, 0.7)",
-    background: "rgba(255, 255, 255, 0.05)",
-    backdropFilter: "blur(10px)",
-    borderRadius: "20px",
-    border: "1px solid rgba(255, 255, 255, 0.1)",
-    margin: "20px",
-    position: "relative", // Ensure emptyState is above background pattern
-    zIndex: 2,
+    padding: "40px 20px",
+    color: "#666",
   },
   emptyIcon: {
-    fontSize: "3rem",
-    marginBottom: "20px",
-    opacity: 0.6,
-    filter: "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))",
+    fontSize: "2.3rem",
+    marginBottom: "14px",
+    opacity: 0.45,
   },
   emptyText: {
-    fontSize: "1.2rem",
-    fontWeight: 700,
-    marginBottom: "12px",
-    color: "#ffffff",
+    fontSize: "1.08rem",
+    fontWeight: 600,
+    marginBottom: "8px",
   },
   emptySubtext: {
-    fontSize: "1rem",
-    color: "rgba(255, 255, 255, 0.6)",
-    fontWeight: 500,
+    fontSize: "0.95rem",
+    color: "#999",
   },
 };
 
@@ -254,39 +178,35 @@ function formatDate(dateStr) {
 
 export default function AllUser() {
   const navigate = useNavigate();
-  const token = localStorage.getItem("authToken");
+  const token = localStorage.getItem("token");
   const userId = localStorage.getItem("id");
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [recentUserIds, setRecentUserIds] = useState([]);
   const [recentUserTimes, setRecentUserTimes] = useState({});
   const [err, setErr] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [hoveredUser, setHoveredUser] = useState(null);
-  const [searchFocused, setSearchFocused] = useState(false);
 
   useEffect(() => {
     if (!token || !userId) {
-      
-      navigate("/login"); // Redirect to login if no token or userId
+      navigate("/");
       return;
     }
-    
     const fetchUsers = async () => {
       setLoading(true);
       setErr("");
       try {
-        // Fetch all users
+        
         const res = await axios.get(`https://socket-io-87f1.onrender.com/api/users`, {
-          
           headers: { Authorization: `Bearer ${token}` },
         });
         const userData = res.data.users || res.data;
         setUsers(userData);
         setFilteredUsers(userData);
-
-        // Fetch recent message info
+        // Get recent message info
         const latest = await axios.get(
           `https://socket-io-87f1.onrender.com/api/message/latest/${userId}`,
           {
@@ -309,13 +229,11 @@ export default function AllUser() {
         setRecentUserIds(latestIds);
         setRecentUserTimes(latestTimes);
       } catch (error) {
-        setErr("Unable to load users. Please check your connection or try again later.");
-        // Optional: Redirect to login on severe error or token expiry
-        // setTimeout(() => navigate("/"), 2000); 
+        setErr("Unable to load users. Please check your connection.");
+        setTimeout(() => navigate("/"), 2000);
       }
       setLoading(false);
     };
-    
     fetchUsers();
   }, [token, navigate, userId]);
 
@@ -340,154 +258,106 @@ export default function AllUser() {
   });
 
   return (
-    <>
-      <style>{`
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
-        
-        html, body {
-          margin: 0;
-          padding: 0;
-        }
-        
-        ::-webkit-scrollbar {
-          width: 8px;
-        }
-        
-        ::-webkit-scrollbar-track {
-          background: rgba(255, 255, 255, 0.1);
-          border-radius: 10px;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.3);
-          border-radius: 10px;
-          border: 2px solid transparent;
-          background-clip: content-box;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.5);
-          background-clip: content-box;
-        }
-        
-        @keyframes pulse {
-          0%, 100% {
-            opacity: 0.03;
-          }
-          50% {
-            opacity: 0.08;
-          }
-        }
-        
-        input::placeholder {
-          color: rgba(255, 255, 255, 0.5);
-          font-weight: 400;
-        }
-        
-        input:-webkit-autofill,
-        input:-webkit-autofill:hover,
-        input:-webkit-autofill:focus {
-          -webkit-box-shadow: 0 0 0 30px rgba(255, 255, 255, 0.15) inset !important;
-          -webkit-text-fill-color: #ffffff !important;
-        }
-      `}</style>
-
-      <div style={styles.wrapper}>
-        <div style={styles.backgroundPattern}></div>
-        
-        <header style={styles.header}>
-          <h1 style={styles.headerTitle}>Your Chats</h1>
-          <div style={styles.subtitle}>
-            {users.length} contacts &middot; Let's get chatting!
-          </div>
-        </header>
-        
-        <div style={styles.content}>
-          <div style={styles.searchBar}>
-            <input
-              type="text"
-              placeholder="Search contacts..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onFocus={() => setSearchFocused(true)}
-              onBlur={() => setSearchFocused(false)}
-              style={{
-                ...styles.searchInput,
-                ...(searchFocused ? styles.searchInputFocused : {}),
-              }}
-            />
-          </div>
-          
-          {err && <div style={styles.error}>{err}</div>}
-          
-          {loading ? (
-            <div style={styles.loading}>✨ Loading conversations...</div>
-          ) : (
-            <ul style={styles.userList}>
-              {sortedUsers.length === 0 ? (
-                <div style={styles.emptyState}>
-                  <div style={styles.emptyIcon}>👥</div>
-                  <div style={styles.emptyText}>
-                    {searchTerm ? "No matches found" : "No users available"}
-                  </div>
-                  <div style={styles.emptySubtext}>
-                    {searchTerm
-                      ? "Try a different search term"
-                      : "Check back later for new contacts"}
-                  </div>
-                </div>
-              ) : (
-                sortedUsers.map((user) => {
-                  const hasRecentMessages = recentUserIds.includes(user._id);
-                  const messageTime = recentUserTimes[user._id];
-                  return (
-                    <li
-                      key={user._id}
-                      style={{
-                        ...styles.userItem,
-                        ...(hoveredUser === user._id ? styles.userItemHover : {}),
-                        ...(hasRecentMessages ? styles.userItemRecent : {}),
-                      }}
-                      onClick={() => goToChat(user)}
-                      onMouseEnter={() => setHoveredUser(user._id)}
-                      onMouseLeave={() => setHoveredUser(null)}
-                      tabIndex={0}
-                      role="button"
-                      aria-label={`Start chat with ${user.name}`}
-                    >
-                      <img
-                        src={user.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${user.name}&backgroundColor=6366f1,8`}
-                        alt={user.name}
-                        style={styles.avatar}
-                        onError={(e) => {
-                          // Fallback to DiceBear if user.avatar fails to load
-                          e.target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${user.name}&backgroundColor=6366f1,8`;
-                          // Set onerror to null to prevent infinite loops if fallback also fails
-                          e.target.onerror = null; 
-                        }}
-                      />
-                      <div style={styles.userInfo}>
-                        <div style={styles.userName}>{user.name}</div>
-                        <div style={styles.userStatus}>
-                          {hasRecentMessages ? "Recent chat" : "New contact"}
-                          {messageTime && (
-                            <span style={styles.messageTime}>{messageTime}</span>
-                          )}
-                        </div>
-                      </div>
-                    </li>
-                  );
-                })
-              )}
-            </ul>
-          )}
+    <div style={styles.wrapper}>
+      <header style={styles.header}>
+        <h1 style={styles.headerTitle}>Your Chats</h1>
+        <div style={styles.subtitle}>
+          {users.length} contacts &middot; Let's get chatting!
         </div>
+      </header>
+      <div style={styles.content}>
+        <div style={styles.searchBar}>
+          <input
+            type="text"
+            placeholder="Search contacts..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              ...styles.searchInput,
+              borderColor: searchTerm ? "#667eea" : "#e9ecef",
+              background: searchTerm ? "#fff" : "#f8f9fa",
+            }}
+          />
+        </div>
+        {err && <div style={styles.error}>{err}</div>}
+        {loading ? (
+          <div style={styles.loading}>Loading conversations...</div>
+        ) : (
+          <ul style={styles.userList}>
+            {sortedUsers.length === 0 ? (
+              <div style={styles.emptyState}>
+                <div style={styles.emptyIcon}>👥</div>
+                <div style={styles.emptyText}>
+                  {searchTerm ? "No matches found" : "No users available"}
+                </div>
+                <div style={styles.emptySubtext}>
+                  {searchTerm
+                    ? "Try a different search term"
+                    : "Check back later for new contacts"}
+                </div>
+              </div>
+            ) : (
+              sortedUsers.map((user) => {
+                const hasRecentMessages = recentUserIds.includes(user._id);
+                const messageTime = recentUserTimes[user._id];
+                return (
+                  <li
+                    key={user._id}
+                    style={{
+                      ...styles.userItem,
+                      ...(hoveredUser === user._id ? styles.userItemHover : {}),
+                      boxShadow: hasRecentMessages
+                        ? "0 4px 18px 0 rgba(79,84,200,0.13)"
+                        : styles.userItem.boxShadow,
+                    }}
+                    onClick={() => goToChat(user)}
+                    onMouseEnter={() => setHoveredUser(user._id)}
+                    onMouseLeave={() => setHoveredUser(null)}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`Start chat with ${user.name}`}
+                  >
+                    <img
+                      src={
+                        user.avatar ||
+                        `https://api.dicebear.com/7.x/initials/svg?seed=${user.name}&backgroundColor=667eea,764ba2`
+                      }
+                      alt={`${user.name}'s avatar`}
+                      style={styles.avatar}
+                      loading="lazy"
+                    />
+                    <div style={styles.userInfo}>
+                      <div
+                        style={{
+                          ...styles.userName,
+                          fontWeight: hasRecentMessages ? 900 : 700,
+                        }}
+                      >
+                        {user.name}
+                      </div>
+
+                      <div style={styles.userStatus}>
+                        {user.email || "Available for chat"}
+                        {recentUserTimes[user._id] && (
+                          <span style={styles.messageTime}>
+                            {recentUserTimes[user._id]}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </li>
+                );
+              })
+            )}
+          </ul>
+        )}
       </div>
-    </>
+      {/* Hide scrollbars globally */}
+      <style>{`
+        ::-webkit-scrollbar { width: 0 !important; background: transparent !important;}
+        html { scrollbar-width: none !important; }
+        body { -ms-overflow-style: none !important; }
+      `}</style>
+    </div>
   );
 }
-//all ok
