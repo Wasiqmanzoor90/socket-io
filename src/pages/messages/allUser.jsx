@@ -7,8 +7,7 @@ const styles = {
   wrapper: {
     width: "100vw",
     minHeight: "100vh", // Use minHeight to allow content to expand
-    background:
-      "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
+    background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
     display: "flex",
     flexDirection: "column",
     fontFamily: "Inter, system-ui, -apple-system, sans-serif",
@@ -94,8 +93,7 @@ const styles = {
   },
   searchInputFocused: {
     borderColor: "rgba(99, 102, 241, 0.6)",
-    boxShadow:
-      "0 0 0 3px rgba(99, 102, 241, 0.1), 0 8px 25px rgba(0, 0, 0, 0.15)",
+    boxShadow: "0 0 0 3px rgba(99, 102, 241, 0.1), 0 8px 25px rgba(0, 0, 0, 0.15)",
     background: "rgba(255, 255, 255, 0.15)",
   },
   userList: {
@@ -126,8 +124,7 @@ const styles = {
   },
   userItemHover: {
     background: "rgba(255, 255, 255, 0.15)",
-    boxShadow:
-      "0 8px 30px rgba(99, 102, 241, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.2)",
+    boxShadow: "0 8px 30px rgba(99, 102, 241, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.2)",
     transform: "translateY(-2px) scale(1.01)",
     borderColor: "rgba(99, 102, 241, 0.3)",
   },
@@ -270,30 +267,21 @@ export default function AllUser() {
   const [searchFocused, setSearchFocused] = useState(false);
 
   useEffect(() => {
-    console.log("Token on Vercel:", token); // <-- Add this
     if (!token || !userId) {
+      
       navigate("/"); // Redirect to login if no token or userId
       return;
     }
-
+    
     const fetchUsers = async () => {
       setLoading(true);
       setErr("");
       try {
         // Fetch all users
-        // const res = await axios.get(`https://socket-io-87f1.onrender.com/api/users`, {
-
-        //   headers: { Authorization: `Bearer ${token}` },
-        // });
-
-        const res = await axios.get(
-          "https://socket-io-87f1.onrender.com/api/users",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const res = await axios.get(`https://socket-io-87f1.onrender.com/api/users`, {
+          
+          headers: { Authorization: `Bearer ${token}` },
+        });
         const userData = res.data.users || res.data;
         setUsers(userData);
         setFilteredUsers(userData);
@@ -321,15 +309,13 @@ export default function AllUser() {
         setRecentUserIds(latestIds);
         setRecentUserTimes(latestTimes);
       } catch (error) {
-        setErr(
-          "Unable to load users. Please check your connection or try again later."
-        );
+        setErr("Unable to load users. Please check your connection or try again later.");
         // Optional: Redirect to login on severe error or token expiry
-        // setTimeout(() => navigate("/"), 2000);
+        // setTimeout(() => navigate("/"), 2000); 
       }
       setLoading(false);
     };
-
+    
     fetchUsers();
   }, [token, navigate, userId]);
 
@@ -412,14 +398,14 @@ export default function AllUser() {
 
       <div style={styles.wrapper}>
         <div style={styles.backgroundPattern}></div>
-
+        
         <header style={styles.header}>
           <h1 style={styles.headerTitle}>Your Chats</h1>
           <div style={styles.subtitle}>
             {users.length} contacts &middot; Let's get chatting!
           </div>
         </header>
-
+        
         <div style={styles.content}>
           <div style={styles.searchBar}>
             <input
@@ -435,9 +421,9 @@ export default function AllUser() {
               }}
             />
           </div>
-
+          
           {err && <div style={styles.error}>{err}</div>}
-
+          
           {loading ? (
             <div style={styles.loading}>✨ Loading conversations...</div>
           ) : (
@@ -463,9 +449,7 @@ export default function AllUser() {
                       key={user._id}
                       style={{
                         ...styles.userItem,
-                        ...(hoveredUser === user._id
-                          ? styles.userItemHover
-                          : {}),
+                        ...(hoveredUser === user._id ? styles.userItemHover : {}),
                         ...(hasRecentMessages ? styles.userItemRecent : {}),
                       }}
                       onClick={() => goToChat(user)}
@@ -476,17 +460,14 @@ export default function AllUser() {
                       aria-label={`Start chat with ${user.name}`}
                     >
                       <img
-                        src={
-                          user.avatar ||
-                          `https://api.dicebear.com/7.x/initials/svg?seed=${user.name}&backgroundColor=6366f1,8`
-                        }
+                        src={user.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${user.name}&backgroundColor=6366f1,8`}
                         alt={user.name}
                         style={styles.avatar}
                         onError={(e) => {
                           // Fallback to DiceBear if user.avatar fails to load
                           e.target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${user.name}&backgroundColor=6366f1,8`;
                           // Set onerror to null to prevent infinite loops if fallback also fails
-                          e.target.onerror = null;
+                          e.target.onerror = null; 
                         }}
                       />
                       <div style={styles.userInfo}>
@@ -494,9 +475,7 @@ export default function AllUser() {
                         <div style={styles.userStatus}>
                           {hasRecentMessages ? "Recent chat" : "New contact"}
                           {messageTime && (
-                            <span style={styles.messageTime}>
-                              {messageTime}
-                            </span>
+                            <span style={styles.messageTime}>{messageTime}</span>
                           )}
                         </div>
                       </div>
