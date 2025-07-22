@@ -7,6 +7,7 @@ const messageSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+    //ok
     room: {
       type: String,
       required: true,
