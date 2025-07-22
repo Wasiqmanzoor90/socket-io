@@ -77,7 +77,7 @@ export default function AllUser() {
   // Handle client-side hydration
   useEffect(() => {
     setIsClient(true);
-    const storedToken = localStorage.getItem("token");
+    const storedToken = localStorage.getItem("authToken");
     const storedUserId = localStorage.getItem("id");
     
     console.log("Token from localStorage:", storedToken);
