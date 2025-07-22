@@ -37,9 +37,11 @@ ConnectDb();
 
 
 // Middleware
-app.use(express.json());
 app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:3000",
+  origin: [
+    process.env.CLIENT_URL,            // For production (Vercel)
+    "http://localhost:3000"           // For local dev
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
 }));
